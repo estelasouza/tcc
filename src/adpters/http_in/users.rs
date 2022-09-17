@@ -7,6 +7,7 @@ use axum::{
 use crate::ports::inbound::users;
 
 pub async fn health() -> &'static str {
+    print!("aq");
     "Hello, World!"
 }
 
