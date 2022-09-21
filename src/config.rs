@@ -1,13 +1,16 @@
-use mongodb::{Client, options::{ClientOptions, ResolverConfig}};
 
-#[tokio::main]
-pub async fn settings() ->  Result<Vec<String>,mongodb::error::Error>  {
-    let client_uri = "mongodb+srv://admin:Test10@cluster0.ud6jftd.mongodb.net/?retryWrites=true&w=majority";
-
-    let options = ClientOptions::parse_with_resolver_config(&client_uri, ResolverConfig::cloudflare()).await?;
-
-   Client::with_options(options)?.list_database_names(None,None).await
-
+use mongodb::{
+    bson::{extjson::de::Error},
+    results::{ InsertOneResult,UpdateResult, DeleteResult},
     
-    
+};
+use crate::ports::out::users::User;
+
+pub trait MongoBD {
+    fn init()-> Self ;
+    fn create_user(&self,new_user:User) -> Result<InsertOneResult, Error> ;
+    fn update_user(&self,id:&'static str, new_user: User)->Result<UpdateResult, Error>;
+    fn delete_user(&self,id:&'static str) ->Result<DeleteResult, Error>;
+    fn get_user(&self,id:&String)-> Result<User, Error>;
+
 }
