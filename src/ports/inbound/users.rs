@@ -10,7 +10,7 @@ pub struct CreateUser {
 
 #[derive(Serialize)]
 pub struct User {
-    pub id: Uuid,
+    pub id: Option<Uuid>,
     pub username: String,
     pub age: u32,
 }

@@ -1,47 +1,62 @@
-use actix_web::FromRequest;
 use axum::{
     http::StatusCode,
     response::IntoResponse,
     Json,
+    
 };
-use axum::extract::Path;  
+use axum::extract::{Path,Extension};  
 use uuid::Uuid;
-use crate::ports::inbound::users;
+use crate::config::MongoBD;
+use crate::ports::inbound::users::CreateUser;
+use crate::ports::out::users::User;
+
 use crate::adpters::db_out::users::MongoRepo;
+use std::sync::Arc;
 
+pub async fn get_by_id(    
+Path(id):Path<String>) -> impl IntoResponse {
+    
+    let state = MongoRepo::init();
 
-pub async fn health(Path(id):Path<String>) -> impl IntoResponse{
-    let greeting = id.as_str();
-
-
-    (StatusCode::OK, String::from(greeting))
+    let result = state.get_user(id.to_string());
+    // aprender a colocar em um objeto -> deserializar -> 
+    
+    (StatusCode::OK, Json(result.unwrap()))
 }
 
 
-pub async fn create_user(Json(payload): Json<users::CreateUser>) -> impl IntoResponse {
-    let user = users::User {
-        id: Uuid::new_v4(),
-        username: payload.username,
+pub async fn create_user(Json(payload): Json<CreateUser>) -> impl IntoResponse {
+    let user = User {
+        id: None,
+        name: payload.username,
         age: payload.age
     };
+    let state = MongoRepo::init();
 
-    (StatusCode::CREATED, Json(user))
+    let final_status =  state.create_user(user);
+
+    (StatusCode::CREATED, Json(final_status.unwrap()))
 }
 
-pub async fn update_user(Json(payload): Json<users::CreateUser>) -> impl IntoResponse {
-    let user = users::User {
-        id: Uuid::new_v4(),
-        username: payload.username,
+pub async fn update_user(Path(name):Path<String>,Json(payload): Json<CreateUser>) -> impl IntoResponse {
+    let user = User {
+        id: None,
+        name: payload.username,
         age: payload.age
 
     };
+    let state = MongoRepo::init();
+    let final_status= state.update_user(name.to_string() , &user);
 
-    (StatusCode::CREATED, Json(user))
+
+    (StatusCode::OK, Json(final_status.unwrap()))
 }
 
-pub async fn delete_user(id: String) -> impl IntoResponse {
-    // fn to delete ( in mongo )
-   
-   
+pub async fn delete_user(Path(name):Path<String>) -> impl IntoResponse {
+    let state = MongoRepo::init();
+
+    state.delete_user( name);
+
     StatusCode::NOT_FOUND
-}
+}    
+
