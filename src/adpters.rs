@@ -1,2 +1,2 @@
-pub mod db_out;
-pub mod http_in;
+pub mod db_outbound;
+pub mod http_inbound;

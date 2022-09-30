@@ -10,10 +10,10 @@ pub mod adpters;
 pub mod ports;
 pub mod config;
 pub mod domain;
-use crate::adpters::http_in::users;
+use crate::adpters::http_inbound::users;
 use std::sync::Arc;
-use crate::adpters::db_out::users::MongoRepo;
-use crate::ports::out::users::User;
+use crate::adpters::db_outbound::users::MongoRepo;
+use crate::ports::outbound::users::User;
 use uuid::Uuid;
 
 #[tokio::main]

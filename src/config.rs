@@ -4,7 +4,7 @@ use mongodb::{
     results::{ InsertOneResult,UpdateResult, DeleteResult},
     
 };
-use crate::ports::out::users::User;
+use crate::ports::outbound::users::User;
 
 pub trait MongoBD {
     fn init()-> Self ;

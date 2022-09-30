@@ -4,7 +4,7 @@ use mongodb::{
     results::{ InsertOneResult,UpdateResult, DeleteResult},
     sync::{Client, Collection},
 };
-use crate::ports::out::users::User;
+use crate::ports::outbound::users::User;
 use std::env;
 use futures::stream::TryStreamExt;
 
@@ -25,7 +25,7 @@ impl MongoBD for MongoRepo {
         let client = Client::with_uri_str("mongodb+srv://admin:Test10@cluster0.ud6jftd.mongodb.net/?retryWrites=true&w=majority").unwrap();
         let db = client.database("rustDB");
         let col: Collection<User> = db.collection("User");
-        
+        print!("fui chamado {:?}", &col);
         MongoRepo { col }
     }
 
