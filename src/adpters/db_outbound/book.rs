@@ -1,57 +1,49 @@
-use crate::config::MongoBD;
+use crate::config::connections::MongoBD;
 use mongodb::{
-    bson::{extjson::de::Error, oid::ObjectId, doc},
+    bson::{extjson::de::Error, doc},
     results::{ InsertOneResult,UpdateResult, DeleteResult},
     sync::{Client, Collection},
 };
-use crate::ports::outbound::users::User;
-use std::env;
-use futures::stream::TryStreamExt;
+use crate::ports::outbound::book::Book;
 
 const MONGO_URI: &str = "mongodb+srv://admin:Test10@cluster0.ud6jftd.mongodb.net/?retryWrites=true&w=majority";
 
 pub struct MongoRepo {
-    col: Collection<User>,
+    col: Collection<Book>,
 }
 
 
 impl MongoBD for MongoRepo {
     fn init() -> Self {
         
-        // let uri = match env::var(MONGO_URI) {
-        //     Ok(v) => v.to_string(),
-        //     Err(_) => format!("Error loading env variable"),
-        // };
+    
         let client = Client::with_uri_str("mongodb+srv://admin:Test10@cluster0.ud6jftd.mongodb.net/?retryWrites=true&w=majority").unwrap();
         let db = client.database("rustDB");
-        let col: Collection<User> = db.collection("User");
-        print!("fui chamado {:?}", &col);
+        let col: Collection<Book> = db.collection("Book");
+        print!("connection start {:?}", &col);
         MongoRepo { col }
     }
 
-    fn create_user(&self, new_user: User) -> Result<InsertOneResult, Error> {
-        let new_doc = User {
-            id: None,
-            name: new_user.name,
-            age: new_user.age
-           
-        };
-        let user = self
+    fn create(&self, new_book: Book) -> Result<InsertOneResult, Error> {
+        let new_doc: Book = new_book;
+        let book = self
             .col
             .insert_one(new_doc, None)
             .ok()
             .expect("Error creating user");
         
-        Ok(user)
+        Ok(book)
     }
 
-    fn update_user(&self, id: String, new_user: &User) ->  Result<UpdateResult, Error> {
+    fn update(&self, id: String, new_doc: &Book) ->  Result<UpdateResult, Error> {
         let obj_id = id;
         let filter = doc! { "name": obj_id};
         let doc = doc! {
             "$set":
             {
-                "name": &new_user.name,            },
+                "book_name": &new_doc.book_name,
+                "book_description": &new_doc.description,
+            },
         };
 
         let update_doc = self.col.update_one(filter, doc, None).ok().expect("error to update");
@@ -60,7 +52,7 @@ impl MongoBD for MongoRepo {
         
     }
 
-    fn delete_user(&self, id:  String) ->  Result<DeleteResult, Error> {
+    fn delete(&self, id:  String) ->  Result<DeleteResult, Error> {
         let obj_id = id ;
         let filter= doc! {"name":obj_id};
 
@@ -68,9 +60,9 @@ impl MongoBD for MongoRepo {
         Ok(user_detail)
     }
 
-    fn get_user(&self, id:  String) ->  Result<User, Error> {
+    fn get(&self, name:  String) ->  Result<Book, Error> {
         let filter = doc! {
-            "name": id
+            "book_name": name
         };
 
         let user_doc = self.col.find_one(filter, None).ok().expect("error getting user");

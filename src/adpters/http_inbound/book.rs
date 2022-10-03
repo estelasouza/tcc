@@ -5,12 +5,12 @@ use axum::{
     
 };
 use axum::extract::{Path,Extension};  
-use uuid::Uuid;
-use crate::config::MongoBD;
-use crate::ports::inbound::users::CreateUser;
-use crate::ports::outbound::users::User;
+use crate::config::connections::MongoBD;
 
-use crate::adpters::db_outbound::users::MongoRepo;
+use crate::ports::inbound::book::{Book, CreateBook};
+use crate::ports::outbound::book::Book as book_outbound;
+
+use crate::adpters::db_outbound::book::MongoRepo;
 use std::sync::Arc;
 
 pub async fn get_by_id(    
@@ -20,52 +20,53 @@ Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
     
 
-    let result = state.get_user(id.to_string());
+    let result = state.get(id.to_string());
     // aprender a colocar em um objeto -> deserializar -> 
     
     (StatusCode::OK, Json(result.unwrap()))
 }
 
 
-pub async fn create_user(
-    Json(payload): Json<CreateUser>,
+pub async fn create(
+    Json(payload): Json<CreateBook>,
     Extension(state): Extension<Arc<MongoRepo>>,
 
 ) -> impl IntoResponse {
-    let user = User {
+    let book = book_outbound {
         id: None,
-        name: payload.username,
-        age: payload.age
+        book_name: payload.name,
+        description: payload.description,
+        is_test: false
     };
 
-    let final_status =  state.create_user(user);
+    let final_status =  state.create(book);
 
     (StatusCode::CREATED, Json(final_status.unwrap()))
 }
 
-pub async fn update_user(
+pub async fn update(
     Path(name):Path<String>,
-    Json(payload): Json<CreateUser>,
+    Json(payload): Json<CreateBook>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
-    let user = User {
+    let book = book_outbound {
         id: None,
-        name: payload.username,
-        age: payload.age
-
+        book_name: payload.name,
+        description: payload.description,
+        is_test: false
     };
-    let final_status= state.update_user(name.to_string() , &user);
+    let final_status= state.update(name.to_string() , &book);
 
 
     (StatusCode::OK, Json(final_status.unwrap()))
 }
 
-pub async fn delete_user(
+pub async fn delete(
     Path(name):Path<String>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
 
-    state.delete_user( name);
+    state.delete( name);
 
     StatusCode::NOT_FOUND
 }    
