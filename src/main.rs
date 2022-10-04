@@ -13,6 +13,7 @@ use crate::adpters::http_inbound::book;
 use std::sync::Arc;
 use crate::adpters::db_outbound::book::MongoRepo;
 use std::net::SocketAddr;
+use crate::config::connections::Http;
 
 
 #[tokio::main]
@@ -29,12 +30,7 @@ async fn main() -> Result<(), ()>  {
         .route("/:name", delete(book::delete))
         .layer(Extension(Arc::clone(&state)));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-
-    axum::Server::bind(&addr)
-    .serve(app.into_make_service())
-    .await
-    .unwrap();
+    Http::new(app);
 
         Ok(())
       

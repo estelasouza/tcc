@@ -6,7 +6,6 @@ use mongodb::{
 };
 use crate::ports::outbound::book::Book;
 
-const MONGO_URI: &str = "mongodb+srv://admin:Test10@cluster0.ud6jftd.mongodb.net/?retryWrites=true&w=majority";
 
 pub struct MongoRepo {
     col: Collection<Book>,

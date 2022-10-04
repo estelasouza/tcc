@@ -7,7 +7,7 @@ use axum::{
 use axum::extract::{Path,Extension};  
 use crate::config::connections::MongoBD;
 
-use crate::ports::inbound::book::{Book, CreateBook};
+use crate::ports::inbound::book::CreateBook;
 use crate::ports::outbound::book::Book as book_outbound;
 
 use crate::adpters::db_outbound::book::MongoRepo;

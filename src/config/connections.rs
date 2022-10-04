@@ -1,15 +1,8 @@
 use std::net::SocketAddr;
-use axum::{
-    Router,
-    
-};
-
-// #[tokio::main]
-// pub fn http_server(app: Router)  {
-    
-// }
-
-
+use hyper::server::conn::AddrIncoming;
+use axum::Router;
+use hyper::Server;
+use axum::routing::IntoMakeService;
 use mongodb::{
     bson::{extjson::de::Error},
     results::{ InsertOneResult,UpdateResult, DeleteResult},
@@ -24,4 +17,24 @@ pub trait MongoBD {
     fn delete(&self,id: String) ->Result<DeleteResult, Error>;
     fn get(&self,id:String)-> Result<Book, Error>;
 
+}
+
+pub struct Http {
+   pub http : Server<AddrIncoming,IntoMakeService<Router>>
+}
+
+impl  Http {
+    pub fn new( app: Router) -> Self {
+        let addr =  SocketAddr::from(([127, 0, 0, 1], 3000));
+
+        let http = axum::Server::bind(&addr)
+        .serve(app.into_make_service());
+        
+        Self { http }
+
+    }
+
+    pub async fn run(self) {
+        self.http.await.unwrap()
+    }
 }
