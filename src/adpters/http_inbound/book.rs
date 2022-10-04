@@ -3,7 +3,8 @@ use axum::extract::{Extension, Path};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 
 use crate::ports::inbound::book::CreateBook;
-use crate::ports::outbound::book::Book as book_outbound;
+use crate::ports::outbound::book::transform_outbound;
+use crate::domain::bussines_logical::book as book_domain;
 
 use crate::adpters::db_outbound::book::MongoRepo;
 use std::sync::Arc;
@@ -13,24 +14,26 @@ pub async fn get_by_id(
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
     let result = state.get(id.to_string());
-    // aprender a colocar em um objeto -> deserializar ->
-
-    (StatusCode::OK, Json(result.unwrap()))
+    match result.unwrap() {
+        value => (StatusCode::OK, Json(value))
+    };
+   
 }
 
 pub async fn create(
     Json(payload): Json<CreateBook>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
-    let book = book_outbound {
+    let book = book_domain::BookDomain {
         id: None,
         book_name: payload.name,
         description: payload.description,
         is_test: false,
     };
-
-    let final_status = state.create(book);
-
+    
+    let book_domain: book_domain::BookDomain = book_domain::validate_field(book) ;
+    let book_out = transform_outbound(book_domain);
+    let final_status = state.create(book_out);
     (StatusCode::CREATED, Json(final_status.unwrap()))
 }
 
@@ -39,14 +42,10 @@ pub async fn update(
     Json(payload): Json<CreateBook>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
-    let book = book_outbound {
-        id: None,
-        book_name: payload.name,
-        description: payload.description,
-        is_test: false,
-    };
-    let final_status = state.update(name.to_string(), &book);
 
+    let book: book_domain::BookDomain = book_domain::validate_field(book_domain::BookDomain { id:None, book_name: payload.name, description: payload.description, is_test: payload.is_test }) ;
+    let book_out = transform_outbound(book);
+    let final_status = state.update(name,&book_out);
     (StatusCode::OK, Json(final_status.unwrap()))
 }
 
@@ -54,7 +53,7 @@ pub async fn delete(
     Path(name): Path<String>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
-    state.delete(name);
-
-    StatusCode::NOT_FOUND
+    
+    let delete = state.delete(name);
+    (StatusCode::OK,Json(delete.unwrap()))
 }

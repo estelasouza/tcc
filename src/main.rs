@@ -1,31 +1,43 @@
-use crate::adpters::db_outbound::book::MongoRepo;
-use crate::adpters::http_inbound::book;
-use crate::config::connections::Http;
 use axum::{
-    extract::Extension,
-    routing::{delete, get, post, put},
+    routing::{get, post, put,delete},
     Router,
+    extract::Extension
+    
 };
 use config::connections::MongoBD;
-use std::sync::Arc;
 pub mod adpters;
+pub mod ports;
 pub mod config;
 pub mod domain;
-pub mod ports;
+use crate::adpters::http_inbound::book;
+use std::sync::Arc;
+use crate::adpters::db_outbound::book::MongoRepo;
+use std::net::SocketAddr;
+
 
 #[tokio::main]
-async fn main() -> Result<(), ()> {
+async fn main() -> Result<(), ()>  {
+
     let state = Arc::new(MongoRepo::init());
 
-    // build our application with a single route
+
+   // build our application with a single route
     let app = Router::new()
         .route("/:name", get(book::get_by_id))
-        .route("/users", post(book::create))
-        .route("/users/:name", put(book::update))
+        .route("/book", post(book::create))
+        .route("/book/:name", put(book::update))
         .route("/:name", delete(book::delete))
         .layer(Extension(Arc::clone(&state)));
 
-    Http::new(app);
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
-    Ok(())
+    axum::Server::bind(&addr)
+    .serve(app.into_make_service())
+    .await
+    .unwrap();
+
+        Ok(())
+      
 }
+
+

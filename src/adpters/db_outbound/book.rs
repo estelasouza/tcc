@@ -18,7 +18,6 @@ impl MongoBD for MongoRepo {
         .unwrap();
         let db = client.database("rustDB");
         let col: Collection<Book> = db.collection("Book");
-        print!("connection start {:?}", &col);
         MongoRepo { col }
     }
 
@@ -62,6 +61,7 @@ impl MongoBD for MongoRepo {
             .delete_one(filter, None)
             .ok()
             .expect("Error deleting user");
+        println!("{:?}",&user_detail);
         Ok(user_detail)
     }
 
