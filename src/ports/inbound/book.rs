@@ -20,7 +20,7 @@ pub struct Book {
 }
 
 
-pub fn validate_field(payload : CreateBook) -> BookDomain{
+pub fn transform_inbound_to_domain(payload : CreateBook) -> BookDomain{
     let book = book_domain::BookDomain {
         id: None,
         book_name: payload.name,

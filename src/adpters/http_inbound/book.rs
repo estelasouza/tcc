@@ -2,7 +2,7 @@ use crate::config::connections::MongoBD;
 use axum::extract::{Extension, Path};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 
-use crate::ports::inbound::book::{CreateBook, validate_field};
+use crate::ports::inbound::book::{CreateBook, transform_inbound_to_domain};
 use crate::ports::outbound::book::transform_domain_to_outbound;
 use crate::domain::bussines_logical::book as book_domain;
 
@@ -24,7 +24,7 @@ pub async fn create(
     Json(payload): Json<CreateBook>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
-    let book = validate_field(payload);
+    let book = transform_inbound_to_domain(payload);
     let book_out = transform_domain_to_outbound(book);
     let final_status = state.create(book_out);
     (StatusCode::CREATED, Json(final_status.unwrap()))
@@ -36,7 +36,7 @@ pub async fn update(
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
 
-    let book =  validate_field(payload) ;
+    let book =  transform_inbound_to_domain(payload) ;
     let book_out = transform_domain_to_outbound(book);
     let final_status = state.update(name,&book_out);
     (StatusCode::OK, Json(final_status.unwrap()))
