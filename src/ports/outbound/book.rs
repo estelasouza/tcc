@@ -1,5 +1,5 @@
 use mongodb::bson::oid::ObjectId;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Book {
@@ -7,7 +7,5 @@ pub struct Book {
     pub id: Option<ObjectId>,
     pub book_name: String, // deixar username no futuro
     pub description: String,
-    pub is_test: bool
-
+    pub is_test: bool,
 }
-

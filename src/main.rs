@@ -1,28 +1,23 @@
+use crate::adpters::db_outbound::book::MongoRepo;
+use crate::adpters::http_inbound::book;
+use crate::config::connections::Http;
 use axum::{
-    routing::{get, post, put,delete},
+    extract::Extension,
+    routing::{delete, get, post, put},
     Router,
-    extract::Extension
-    
 };
 use config::connections::MongoBD;
+use std::sync::Arc;
 pub mod adpters;
-pub mod ports;
 pub mod config;
 pub mod domain;
-use crate::adpters::http_inbound::book;
-use std::sync::Arc;
-use crate::adpters::db_outbound::book::MongoRepo;
-use std::net::SocketAddr;
-use crate::config::connections::Http;
-
+pub mod ports;
 
 #[tokio::main]
-async fn main() -> Result<(), ()>  {
-
+async fn main() -> Result<(), ()> {
     let state = Arc::new(MongoRepo::init());
 
-
-   // build our application with a single route
+    // build our application with a single route
     let app = Router::new()
         .route("/:name", get(book::get_by_id))
         .route("/users", post(book::create))
@@ -32,8 +27,5 @@ async fn main() -> Result<(), ()>  {
 
     Http::new(app);
 
-        Ok(())
-      
+    Ok(())
 }
-
-
