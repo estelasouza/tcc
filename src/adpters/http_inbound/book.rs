@@ -3,13 +3,13 @@ use axum::extract::{Extension, Path};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 
 use crate::ports::inbound::book::CreateBook;
-use crate::ports::outbound::book::transform_outbound;
+use crate::ports::outbound::book::transform_domain_to_outbound;
 use crate::domain::bussines_logical::book as book_domain;
 
 use crate::adpters::db_outbound::book::MongoRepo;
 use std::sync::Arc;
 
-pub async fn get_by_id(
+pub async fn get_by_name(
     Path(id): Path<String>,
     Extension(state): Extension<Arc<MongoRepo>>,
 ) -> impl IntoResponse {
@@ -31,8 +31,8 @@ pub async fn create(
         is_test: false,
     };
     
-    let book_domain: book_domain::BookDomain = book_domain::validate_field(book) ;
-    let book_out = transform_outbound(book_domain);
+    let result_book: book_domain::BookDomain = book_domain::validate_field(book) ;
+    let book_out = transform_domain_to_outbound(result_book);
     let final_status = state.create(book_out);
     (StatusCode::CREATED, Json(final_status.unwrap()))
 }
@@ -44,7 +44,7 @@ pub async fn update(
 ) -> impl IntoResponse {
 
     let book: book_domain::BookDomain = book_domain::validate_field(book_domain::BookDomain { id:None, book_name: payload.name, description: payload.description, is_test: payload.is_test }) ;
-    let book_out = transform_outbound(book);
+    let book_out = transform_domain_to_outbound(book);
     let final_status = state.update(name,&book_out);
     (StatusCode::OK, Json(final_status.unwrap()))
 }

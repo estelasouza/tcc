@@ -12,7 +12,7 @@ pub struct Book {
     pub is_test: bool,
 }
 
-pub fn transform_outbound(payload: BookDomain) -> Book{
+pub fn transform_domain_to_outbound(payload: BookDomain) -> Book{
 
     let new_doc = Book {
         id: None,

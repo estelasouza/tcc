@@ -18,16 +18,15 @@ use std::net::SocketAddr;
 #[tokio::main]
 async fn main() -> Result<(), ()>  {
 
-    let state = Arc::new(MongoRepo::init());
+    let bd_state = Arc::new(MongoRepo::init());
 
 
-   // build our application with a single route
     let app = Router::new()
-        .route("/:name", get(book::get_by_id))
+        .route("/:name", get(book::get_by_name))
         .route("/book", post(book::create))
         .route("/book/:name", put(book::update))
         .route("/:name", delete(book::delete))
-        .layer(Extension(Arc::clone(&state)));
+        .layer(Extension(Arc::clone(&bd_state)));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
